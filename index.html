@@ -1,48 +1,45 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Boolean Cube</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="topbar">
-  <div class="brand">
+<header>
+  <div>
     <h1>BOOLEAN CUBE</h1>
     <p>Identify the binary operation that transforms Input A and Input B into the result.</p>
   </div>
-  <div id="score" class="score">SCORE <strong>0</strong></div>
+  <div class="score">SCORE <b id="score">0</b></div>
 </header>
 
-<main class="game">
-  <section class="cube-region">
-    <div class="cube-title blue-title">INPUT A</div>
-    <div class="cube-stage"><canvas id="cubeA" aria-label="Input A"></canvas></div>
+<main>
+  <section class="region">
+    <h2 class="blue">INPUT A</h2>
+    <div class="stage"><div id="cubeA" class="cube blue-cube"></div></div>
   </section>
 
-  <section class="operator-region">
-    <div class="operator-label">?</div>
-    <div class="operator-subtitle">OPERATION</div>
+  <div class="operator"><strong>?</strong><span>OPERATION</span></div>
+
+  <section class="region">
+    <h2 class="yellow">INPUT B</h2>
+    <div class="stage"><div id="cubeB" class="cube yellow-cube"></div></div>
   </section>
 
-  <section class="cube-region">
-    <div class="cube-title yellow-title">INPUT B</div>
-    <div class="cube-stage"><canvas id="cubeB" aria-label="Input B"></canvas></div>
-  </section>
+  <div class="equals">=</div>
 
-  <section class="equals">=</section>
-
-  <section class="cube-region">
-    <div class="cube-title red-title">RESULT</div>
-    <div class="cube-stage"><canvas id="cubeResult" aria-label="Result"></canvas></div>
+  <section class="region">
+    <h2 class="red">RESULT</h2>
+    <div class="stage"><div id="cubeR" class="cube red-cube"></div></div>
   </section>
 </main>
 
 <section class="controls">
-  <div class="prompt">Select the correct operation:</div>
-  <div id="message" class="message"></div>
-  <div class="operation-buttons">
+  <p>Select the correct operation:</p>
+  <div id="message"></div>
+  <div class="buttons">
     <button data-op="AND">AND</button>
     <button data-op="OR">OR</button>
     <button data-op="XOR">XOR</button>
@@ -50,7 +47,7 @@
     <button data-op="NAND">NAND</button>
     <button data-op="XNOR">XNOR</button>
   </div>
-  <button id="nextButton" class="next-button hidden">NEXT</button>
+  <button id="next" class="next hidden">NEXT</button>
 </section>
 <script src="script.js"></script>
 </body>
