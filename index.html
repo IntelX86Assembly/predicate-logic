@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Boolean Cube — Actual 3D Spheres</title>
+<title>Boolean Cube</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="topbar">
-  <div>
+  <div class="brand">
     <h1>BOOLEAN CUBE</h1>
     <p>Identify the binary operation that transforms Input A and Input B into the result.</p>
   </div>
@@ -18,7 +18,7 @@
 <main class="game">
   <section class="cube-region">
     <div class="cube-title blue-title">INPUT A</div>
-    <div class="cube-stage" id="stageA"></div>
+    <div class="cube-stage"><canvas id="cubeA" aria-label="Input A"></canvas></div>
   </section>
 
   <section class="operator-region">
@@ -28,14 +28,14 @@
 
   <section class="cube-region">
     <div class="cube-title yellow-title">INPUT B</div>
-    <div class="cube-stage" id="stageB"></div>
+    <div class="cube-stage"><canvas id="cubeB" aria-label="Input B"></canvas></div>
   </section>
 
   <section class="equals">=</section>
 
   <section class="cube-region">
     <div class="cube-title red-title">RESULT</div>
-    <div class="cube-stage" id="stageR"></div>
+    <div class="cube-stage"><canvas id="cubeResult" aria-label="Result"></canvas></div>
   </section>
 </main>
 
@@ -52,9 +52,6 @@
   </div>
   <button id="nextButton" class="next-button hidden">NEXT</button>
 </section>
-
-<!-- Three.js is loaded from a public CDN. GitHub Pages can host this project
-     as-is; no server or build step is required. -->
-<script type="module" src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
