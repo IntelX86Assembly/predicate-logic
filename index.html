@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Boolean Cube 3D</title>
+<title>Boolean Cube — 3D Isometric</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="topbar">
   <div>
     <h1>BOOLEAN CUBE</h1>
-    <p>Identify the binary operation that transforms A and B into the result.</p>
+    <p>Identify the binary operation that transforms Input A and Input B into the result.</p>
   </div>
   <div id="score" class="score">Score: 0</div>
 </header>
@@ -18,7 +18,7 @@
 <main class="game">
   <section class="cube-region">
     <div class="cube-title">INPUT A</div>
-    <div class="cube-stage blue-stage"><div id="cubeA" class="cube"></div></div>
+    <div class="cube-stage"><svg id="cubeA" class="iso-cube" viewBox="0 0 520 430" aria-label="Input A"></svg></div>
   </section>
 
   <section class="operator-region">
@@ -28,17 +28,17 @@
 
   <section class="cube-region">
     <div class="cube-title">INPUT B</div>
-    <div class="cube-stage yellow-stage"><div id="cubeB" class="cube"></div></div>
+    <div class="cube-stage"><svg id="cubeB" class="iso-cube" viewBox="0 0 520 430" aria-label="Input B"></svg></div>
   </section>
 
   <section class="cube-region">
     <div class="cube-title">RESULT</div>
-    <div class="cube-stage red-stage"><div id="cubeResult" class="cube"></div></div>
+    <div class="cube-stage"><svg id="cubeResult" class="iso-cube" viewBox="0 0 520 430" aria-label="Result"></svg></div>
   </section>
 </main>
 
 <section class="controls">
-  <div id="message" class="message">Which operation produced the result?</div>
+  <div id="message" class="message">Which binary operation produced the result?</div>
   <div class="operation-buttons">
     <button data-op="AND">AND</button>
     <button data-op="OR">OR</button>
