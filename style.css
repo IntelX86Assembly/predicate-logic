@@ -5,18 +5,27 @@ body{min-height:100vh;color:var(--text);font-family:Inter,system-ui,-apple-syste
 .topbar{min-height:86px;padding:18px 30px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:#080b13e8}
 h1{margin:0;font-size:1.25rem;letter-spacing:.14em}.topbar p{margin:6px 0 0;color:var(--muted);font-size:.84rem}
 .score{padding:9px 15px;border:1px solid var(--border);border-radius:10px;background:var(--panel);font-weight:800}
-.game{width:100%;min-height:620px;padding:28px 1.5vw 5px;display:grid;grid-template-columns:minmax(280px,1fr) 70px minmax(280px,1fr) minmax(280px,1fr);align-items:center}
+.game{width:100%;min-height:620px;padding:35px 2vw 10px;display:grid;grid-template-columns:minmax(250px,1fr) 75px minmax(250px,1fr) minmax(250px,1fr);align-items:center}
 .cube-region{min-width:0;height:540px;display:flex;flex-direction:column;justify-content:center;align-items:center}
-.cube-title{color:var(--muted);font-size:.76rem;font-weight:900;letter-spacing:.18em;margin-bottom:0}
-.cube-stage{width:min(100%,500px);height:475px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 25px 25px rgba(0,0,0,.45))}
-.iso-cube{width:100%;height:100%;overflow:visible}
+.cube-title{color:var(--muted);font-size:.76rem;font-weight:900;letter-spacing:.18em;margin-bottom:5px}
 .operator-region{height:540px;display:flex;flex-direction:column;justify-content:center;align-items:center}
 .operator-label{width:54px;height:54px;display:grid;place-items:center;border:1px solid var(--border);border-radius:14px;background:var(--panel);color:#d9caff;font-size:1.8rem;font-weight:900;box-shadow:0 15px 40px #0008}
 .operator-subtitle{margin-top:10px;color:#65718a;font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;text-align:center}
+.cube-stage{--size:56px;width:280px;height:455px;display:flex;align-items:center;justify-content:center;perspective:1000px;perspective-origin:50% 48%;overflow:visible;filter:drop-shadow(0 25px 25px rgba(0,0,0,.45))}
+.cube{position:relative;width:calc(var(--size)*3);height:calc(var(--size)*3);transform-style:preserve-3d;transform:perspective(900px) rotateX(-27deg) rotateY(-36deg) rotateZ(0deg);transition:transform .35s ease}
+.cube:hover{transform:perspective(900px) rotateX(-22deg) rotateY(-42deg)}
+.voxel{position:absolute;width:var(--size);height:var(--size);left:calc(var(--size)*1.5 - var(--size)/2);top:calc(var(--size)*1.5 - var(--size)/2);transform-style:preserve-3d}
+.face{position:absolute;width:var(--size);height:var(--size);border:1px solid rgba(255,255,255,.12);backface-visibility:visible}
+.face.front{transform:translateZ(calc(var(--size)/2))}.face.back{transform:rotateY(180deg) translateZ(calc(var(--size)/2))}.face.right{transform:rotateY(90deg) translateZ(calc(var(--size)/2))}.face.left{transform:rotateY(-90deg) translateZ(calc(var(--size)/2))}.face.top{transform:rotateX(90deg) translateZ(calc(var(--size)/2))}.face.bottom{transform:rotateX(-90deg) translateZ(calc(var(--size)/2))}
+.voxel.empty .face{background:rgba(30,40,60,.16);border-color:rgba(125,145,180,.20)}
+.voxel.filled .face{background:rgba(36,52,76,.48);border-color:rgba(180,205,235,.18)}
+.sphere{position:absolute;width:58%;height:58%;left:21%;top:16%;border-radius:50%;transform:translateZ(calc(var(--size)*.28));pointer-events:none;background:var(--sphere);border:1px solid rgba(255,255,255,.45);box-shadow:inset -9px -11px 13px rgba(0,0,0,.28),inset 8px 7px 12px rgba(255,255,255,.78),0 0 18px var(--glow),8px 11px 13px rgba(0,0,0,.62)}
+.sphere::before{content:"";position:absolute;width:42%;height:27%;left:17%;top:10%;border-radius:50%;background:rgba(255,255,255,.78);filter:blur(2px);transform:rotate(-25deg)}
+.sphere::after{content:"";position:absolute;width:74%;height:28%;left:12%;bottom:-9%;border-radius:50%;background:rgba(0,0,0,.42);filter:blur(5px);z-index:-1}
+.blue-stage{--sphere:var(--blue);--glow:rgba(90,205,255,.55)}.yellow-stage{--sphere:var(--yellow);--glow:rgba(255,230,80,.48)}.red-stage{--sphere:var(--red);--glow:rgba(255,90,110,.55)}
 .controls{padding:15px 24px 38px;text-align:center}.message{min-height:25px;margin-bottom:15px;color:var(--muted);font-weight:750}
-.operation-buttons{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}.operation-buttons button{min-width:105px;padding:13px 19px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);font-weight:900;cursor:pointer;transition:transform .12s,filter .12s,border-color .12s}.operation-buttons button:hover{transform:translateY(-2px);filter:brightness(1.25);border-color:#65718e}
-.operation-buttons button.correct{border-color:var(--green);color:var(--green);box-shadow:0 0 20px #68f5b044}.operation-buttons button.wrong{border-color:var(--red);color:var(--red);animation:shake .25s ease}
+.operation-buttons{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}.operation-buttons button{min-width:105px;padding:13px 19px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);font-weight:900;cursor:pointer;transition:transform .12s,filter .12s,border-color .12s}.operation-buttons button:hover{transform:translateY(-2px);filter:brightness(1.25);border-color:#65718e}.operation-buttons button.correct{border-color:var(--green);color:var(--green);box-shadow:0 0 20px #68f5b044}.operation-buttons button.wrong{border-color:var(--red);color:var(--red);animation:shake .25s ease}
 .next-button{margin-top:17px;padding:13px 42px;border:0;border-radius:10px;background:var(--red);color:#22040a;font-weight:950;cursor:pointer}.hidden{display:none}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-@media(max-width:1150px){.game{grid-template-columns:1fr 50px 1fr;grid-template-areas:"a op b" "r r r"}.cube-region:nth-child(1){grid-area:a}.operator-region{grid-area:op}.cube-region:nth-child(3){grid-area:b}.cube-region:nth-child(4){grid-area:r}}
-@media(max-width:650px){.topbar{padding:15px}.topbar p{display:none}.game{grid-template-columns:1fr;grid-template-areas:"a" "op" "b" "r";padding-top:5px}.cube-region{height:370px}.operator-region{height:90px}.cube-stage{height:330px}}
+@media(max-width:1150px){.game{grid-template-columns:1fr 50px 1fr;grid-template-areas:"a op b" "r r r";min-height:auto}.cube-region:nth-child(1){grid-area:a}.operator-region{grid-area:op}.cube-region:nth-child(3){grid-area:b}.result-region{grid-area:r}}
+@media(max-width:650px){.topbar{padding:15px}.topbar p{display:none}.game{grid-template-columns:1fr;grid-template-areas:"a" "op" "b" "r";padding-top:10px}.cube-region{height:390px}.operator-region{height:90px}.cube-stage{height:330px}.cube{--size:52px}}
