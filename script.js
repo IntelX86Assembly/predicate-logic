@@ -350,7 +350,7 @@ function addSphere(root, index, palette) {
    * The glow is NOT used as the sphere itself.
    * The actual sphere above is a real 3D mesh.
    */
-
+/*
   const haloMaterial = new THREE.SpriteMaterial({
 
     color: palette.main,
@@ -387,7 +387,8 @@ function addSphere(root, index, palette) {
   root.add(halo);
 }
 
-
+*/
+  
 /* =========================================================
    BUILD CUBE
 ========================================================= */
