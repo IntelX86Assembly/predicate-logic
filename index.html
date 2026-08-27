@@ -8,37 +8,40 @@
 </head>
 <body>
 <header class="topbar">
-  <div>
+  <div class="brand">
     <h1>BOOLEAN CUBE</h1>
     <p>Identify the binary operation that transforms Input A and Input B into the result.</p>
   </div>
-  <div id="score" class="score">Score: 0</div>
+  <div id="score" class="score">SCORE <strong>0</strong></div>
 </header>
 
 <main class="game">
   <section class="cube-region">
-    <div class="cube-title">INPUT A</div>
+    <div class="cube-title blue-title">INPUT A</div>
     <div class="cube-stage blue-stage"><div id="cubeA" class="cube"></div></div>
   </section>
 
   <section class="operator-region">
     <div class="operator-label">?</div>
-    <div class="operator-subtitle">binary gate</div>
+    <div class="operator-subtitle">OPERATION</div>
   </section>
 
   <section class="cube-region">
-    <div class="cube-title">INPUT B</div>
+    <div class="cube-title yellow-title">INPUT B</div>
     <div class="cube-stage yellow-stage"><div id="cubeB" class="cube"></div></div>
   </section>
 
+  <section class="equals">=</section>
+
   <section class="cube-region result-region">
-    <div class="cube-title">RESULT</div>
+    <div class="cube-title red-title">RESULT</div>
     <div class="cube-stage red-stage"><div id="cubeResult" class="cube"></div></div>
   </section>
 </main>
 
 <section class="controls">
-  <div id="message" class="message">Which binary operation produced the result?</div>
+  <div class="prompt">Select the correct operation:</div>
+  <div id="message" class="message"></div>
   <div class="operation-buttons">
     <button data-op="AND">AND</button>
     <button data-op="OR">OR</button>
@@ -49,6 +52,7 @@
   </div>
   <button id="nextButton" class="next-button hidden">NEXT</button>
 </section>
+
 <script src="script.js"></script>
 </body>
 </html>
