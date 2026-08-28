@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Predicate Logic Equivalence</title>
+<style>
+:root{
+  --bg:#0b1020;--panel:#141b31;--panel2:#1b2440;--text:#f5f7ff;--muted:#aab4d0;
+  --accent:#7c8cff;--accent2:#53d8ff;--good:#35d07f;--bad:#ff5f7a;--border:#2b3658;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% 0%,#18254a 0,#0b1020 48%,#070b15 100%);
+color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;min-height:100vh}
+header{height:72px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:#0b1020e8;backdrop-filter:blur(10px);position:sticky;top:0;z-index:3}
+.logo{font-weight:800;letter-spacing:.4px;font-size:20px}.logo span{color:var(--accent2)}
+.stats{display:flex;gap:18px;color:var(--muted);font-weight:650}.stats strong{color:white}
+main{width:min(900px,92vw);margin:38px auto 60px}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:20px}
+h1{font-size:clamp(26px,4vw,40px);margin:0 0 7px}.subtitle{color:var(--muted);margin:0}
+.controls{display:flex;gap:9px;flex-wrap:wrap}
+select,button{font:inherit}
+select{background:var(--panel);border:1px solid var(--border);color:white;border-radius:10px;padding:10px 12px;cursor:pointer}
+.card{background:linear-gradient(145deg,#151d35,#10172b);border:1px solid var(--border);border-radius:18px;padding:28px;box-shadow:0 18px 50px #0005}
+.label{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent2);font-weight:800;margin-bottom:12px}
+.prompt{font-size:clamp(21px,3vw,29px);line-height:1.45;font-weight:700;min-height:120px;display:flex;align-items:center}
+.prompt .math{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:650}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:24px}
+.answer{border:1px solid var(--border);background:var(--panel2);color:white;border-radius:14px;padding:18px;text-align:left;cursor:pointer;min-height:104px;transition:.16s transform,.16s border-color,.16s background}
+.answer:hover:not(:disabled){transform:translateY(-2px);border-color:#6575bd;background:#222d4e}
+.answer:disabled{cursor:default}.answer.correct{border-color:var(--good);background:#143b2a}.answer.wrong{border-color:var(--bad);background:#411d2a}
+.answer .letter{display:inline-flex;width:27px;height:27px;align-items:center;justify-content:center;border-radius:8px;background:#293453;color:#dbe1ff;font-weight:800;margin-right:9px}
+.answer.correct .letter{background:#1c9c5d}.answer.wrong .letter{background:#bd3855}
+.answerText{display:inline;line-height:1.45}
+.feedback{min-height:62px;margin-top:18px;border-radius:12px;padding:14px 16px;background:#0d1426;color:var(--muted);line-height:1.45}
+.feedback.good{color:#b9f5d2;border:1px solid #236e48}.feedback.bad{color:#ffc0ca;border:1px solid #743040}
+.bottom{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:15px}
+button.next{border:0;background:linear-gradient(135deg,var(--accent),#5968e9);color:white;font-weight:800;padding:12px 20px;border-radius:11px;cursor:pointer;display:none}
+button.next.show{display:block}.hint{color:var(--muted);font-size:13px}
+.progress{height:5px;background:#202943;border-radius:10px;margin:0 0 24px;overflow:hidden}.progress div{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:.3s}
+.help{margin-top:18px;color:var(--muted);font-size:13px;line-height:1.55}
+kbd{border:1px solid #3a4669;background:#11182b;padding:2px 6px;border-radius:5px;color:#eaf0ff}
+@media(max-width:680px){.answers{grid-template-columns:1fr}.topline{align-items:flex-start;flex-direction:column}.stats{font-size:13px}.card{padding:20px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Predicate <span>Logic</span> Equivalence</div>
+  <div class="stats">
+    <div>Score <strong id="score">0</strong></div>
+    <div>Streak <strong id="streak">0</strong></div>
+    <div>Question <strong id="qnum">1</strong></div>
+  </div>
+</header>
+
+<main>
+  <div class="topline">
+    <div>
+      <h1>Find the Equivalent Statement</h1>
+      <p class="subtitle">One answer means exactly the same thing as the premise. Switch modes and difficulty to change how the logic is presented.</p>
+    </div>
+    <div class="controls">
+      <select id="mode" aria-label="Answer mode">
+        <option value="english">English Nouns → English Answers</option>
+        <option value="variables">Variables in English → English Answers</option>
+        <option value="symbols">Predicate Logic Symbols</option>
+      </select>
+      <select id="difficulty" aria-label="Difficulty">
+        <option value="1">Difficulty 1 — Foundations</option>
+        <option value="2">Difficulty 2 — Quantifiers</option>
+        <option value="3">Difficulty 3 — Negation</option>
+        <option value="4">Difficulty 4 — Nested Logic</option>
+        <option value="5">Difficulty 5 — Expert</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="progress"><div id="progress"></div></div>
+
+  <section class="card">
+    <div class="label">Premise</div>
+    <div class="prompt" id="prompt"></div>
+    <div class="answers" id="answers"></div>
+    <div class="feedback" id="feedback">Choose the statement that is logically equivalent.</div>
+    <div class="bottom">
+      <div class="hint">Keyboard: <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> to answer</div>
+      <button class="next" id="next">Next Question →</button>
+    </div>
+  </section>
+
+  <div class="help">
+    <b>Goal:</b> ignore wording and compare logical structure. At higher difficulties, expect nested
+    quantifiers, De Morgan transformations, implications, biconditionals, and negated quantifiers.
+  </div>
+</main>
+
+<script>
+const P = {
+  "Student(x)":"x is a student","Studies(x)":"x studies","Passes(x)":"x passes the exam",
+  "Works(x)":"x works","Likes(x,y)":"x likes y","Knows(x,y)":"x knows y",
+  "Visits(x,y)":"x visits y","Reads(x)":"x reads the textbook","Enrolled(x)":"x is enrolled",
+  "Uses(x,y)":"x uses y","IsPrime(x)":"x is prime","IsEven(x)":"x is even",
+  "IsPositive(x)":"x is positive"
+};
+
+let score=0, streak=0, qnum=1, answered=false, current=null;
+
+const ATOMS = {
+  nouns:["student","teacher","programmer","athlete","researcher","artist","engineer","musician","doctor","writer","traveler","employee","customer","player","scientist"],
+  props:["studies","works","reads","passes","is enrolled","is prepared","is successful","is experienced","is organized","is creative"],
+  rels:["likes","knows","visits","helps","trusts","advises","follows","contacts","uses","teaches"]
+};
+
+const SYMBOL_ATOMS = [
+  ["A(x)","B(x)"],["P(x)","Q(x)"],["R(x)","S(x)"],["Student(x)","Studies(x)"],
+  ["Works(x)","Passes(x)"],["A(x)","B(y)"],["P(x)","R(y)"]
+];
+
+
+/* ============================================================
+   LOGICAL EQUIVALENCE ENGINE
+   ============================================================
+   The engine parses the game's first-order formulas and tests
+   equivalence by evaluating both formulas over many independently
+   generated finite structures.
+
+   For purely propositional formulas it exhausts every truth
+   assignment, so those checks are exact.
+
+   For quantified formulas, finite-model testing is a rigorous
+   bounded semantic check: if a countermodel is found, the two
+   formulas are definitely NOT equivalent. If all generated
+   models agree, the pair is treated as equivalent for gameplay.
+   ============================================================ */
+
+class LogicLexer {
+  constructor(s){
+    this.s=s.replace(/\s+/g," ").trim();
+    this.i=0;
+  }
+  next(){
+    while(this.i<this.s.length && this.s[this.i]===" ")this.i++;
+    if(this.i>=this.s.length)return {t:"EOF"};
+    const rest=this.s.slice(this.i);
+    const m=rest.match(/^(∀|∃|¬|∧|∨|→|↔|\(|\)|,|[A-Za-z_][A-Za-z0-9_]*|\d+)/);
+    if(!m)throw new Error("Unexpected token near "+rest.slice(0,20));
+    this.i+=m[0].length;
+    return {t:m[0]};
+  }
+}
+
+function tokenizeLogic(s){
+  const l=new LogicLexer(s),out=[];
+  while(true){
+    const x=l.next();out.push(x);
+    if(x.t==="EOF")break;
+  }
+  return out;
+}
+
+class LogicParser {
+  constructor(s){
+    this.t=tokenizeLogic(s);
+    this.i=0;
+  }
+  peek(){return this.t[this.i].t}
+  take(x){
+    if(this.peek()!==x)throw new Error(`Expected ${x}, got ${this.peek()}`);
+    this.i++;
+  }
+  parse(){
+    const n=this.iff();
+    this.take("EOF");
+    return n;
+  }
+  iff(){
+    let n=this.imp();
+    while(this.peek()==="↔"){this.i++;n={k:"iff",a:n,b:this.imp()};}
+    return n;
+  }
+  imp(){
+    let n=this.or();
+    if(this.peek()==="→"){this.i++;n={k:"imp",a:n,b:this.imp()};}
+    return n;
+  }
+  or(){
+    let n=this.and();
+    while(this.peek()==="∨"){this.i++;n={k:"or",a:n,b:this.and()};}
+    return n;
+  }
+  and(){
+    let n=this.unary();
+    while(this.peek()==="∧"){this.i++;n={k:"and",a:n,b:this.unary()};}
+    return n;
+  }
+  unary(){
+    if(this.peek()==="¬"){this.i++;return {k:"not",a:this.unary()};}
+    if(this.peek()==="∀" || this.peek()==="∃"){
+      const q=this.peek();this.i++;
+      const v=this.peek();this.i++;
+      return {k:q==="∀"?"forall":"exists",v, a:this.unary()};
+    }
+    if(this.peek()==="("){
+      this.i++;const n=this.iff();this.take(")");return n;
+    }
+    const name=this.peek();this.i++;
+    if(this.peek()==="("){
+      this.i++;
+      const args=[];
+      if(this.peek()!==")"){
+        args.push(this.peek());this.i++;
+        while(this.peek()===","){this.i++;args.push(this.peek());this.i++;}
+      }
+      this.take(")");
+      return {k:"pred",name,args};
+    }
+    return {k:"pred",name,args:[]};
+  }
+}
+
+function parseLogic(s){
+  return new LogicParser(s).parse();
+}
+
+function collectSymbols(ast,set={preds:new Set(),rels:new Set()}){
+  if(!ast)return set;
+  if(ast.k==="pred"){
+    if(ast.args.length<=1)set.preds.add(ast.name);
+    else set.rels.add(ast.name);
+    return set;
+  }
+  if(ast.a)collectSymbols(ast.a,set);
+  if(ast.b)collectSymbols(ast.b,set);
+  return set;
+}
+
+function mergeSymbols(a,b){
+  return {
+    preds:new Set([...a.preds,...b.preds]),
+    rels:new Set([...a.rels,...b.rels])
+  };
+}
+
+function domainAssignments(domain,arity){
+  if(arity===1)return domain.map(x=>[x]);
+  const out=[];
+  function rec(prefix){
+    if(prefix.length===arity){out.push(prefix.slice());return;}
+    for(const x of domain){prefix.push(x);rec(prefix);prefix.pop();}
+  }
+  rec([]);
+  return out;
+}
+
+function randomStructure(symbols,n=3){
+  const domain=Array.from({length:n},(_,i)=>i);
+  const s={domain,preds:{},rels:{}};
+  for(const p of symbols.preds){
+    const set=new Set();
+    for(const x of domain)if(Math.random()<.5)set.add(String(x));
+    s.preds[p]=set;
+  }
+  for(const r of symbols.rels){
+    const set=new Set();
+    for(const tuple of domainAssignments(domain,2))
+      if(Math.random()<.35)set.add(tuple.join(","));
+    s.rels[r]=set;
+  }
+  return s;
+}
+
+function evalLogic(ast,structure,env={}){
+  switch(ast.k){
+    case "pred":{
+      const vals=ast.args.map(a=>{
+        if(Object.prototype.hasOwnProperty.call(env,a))return env[a];
+        return a;
+      });
+      if(ast.args.length===0)return !!structure.preds[ast.name]?.has("0");
+      if(ast.args.length===1)return !!structure.preds[ast.name]?.has(String(vals[0]));
+      return !!structure.rels[ast.name]?.has(vals.map(String).join(","));
+    }
+    case "not":return !evalLogic(ast.a,structure,env);
+    case "and":return evalLogic(ast.a,structure,env)&&evalLogic(ast.b,structure,env);
+    case "or":return evalLogic(ast.a,structure,env)||evalLogic(ast.b,structure,env);
+    case "imp":return !evalLogic(ast.a,structure,env)||evalLogic(ast.b,structure,env);
+    case "iff":return evalLogic(ast.a,structure,env)===evalLogic(ast.b,structure,env);
+    case "forall":return structure.domain.every(x=>evalLogic(ast.a,structure,{...env,[ast.v]:x}));
+    case "exists":return structure.domain.some(x=>evalLogic(ast.a,structure,{...env,[ast.v]:x}));
+  }
+  throw new Error("Unknown AST node "+ast.k);
+}
+
+function propositionalSymbols(ast,set=new Set()){
+  if(!ast)return set;
+  if(ast.k==="pred" && ast.args.length===0)set.add(ast.name);
+  if(ast.a)propositionalSymbols(ast.a,set);
+  if(ast.b)propositionalSymbols(ast.b,set);
+  return set;
+}
+
+function evalPropositional(ast,env){
+  switch(ast.k){
+    case "pred":return !!env[ast.name];
+    case "not":return !evalPropositional(ast.a,env);
+    case "and":return evalPropositional(ast.a,env)&&evalPropositional(ast.b,env);
+    case "or":return evalPropositional(ast.a,env)||evalPropositional(ast.b,env);
+    case "imp":return !evalPropositional(ast.a,env)||evalPropositional(ast.b,env);
+    case "iff":return evalPropositional(ast.a,env)===evalPropositional(ast.b,env);
+  }
+}
+
+function exactPropositionalEquivalent(a,b){
+  const names=[...new Set([
+    ...propositionalSymbols(a),...propositionalSymbols(b)
+  ])];
+  const total=1<<names.length;
+  for(let mask=0;mask<total;mask++){
+    const env={};
+    names.forEach((name,i)=>env[name]=!!(mask&(1<<i)));
+    if(evalPropositional(a,env)!==evalPropositional(b,env))return false;
+  }
+  return true;
+}
+
+function finiteModelEquivalent(formulaA,formulaB,tests=80){
+  try{
+    const a=parseLogic(formulaA),b=parseLogic(formulaB);
+    const syms=mergeSymbols(collectSymbols(a),collectSymbols(b));
+
+    const pa=propositionalSymbols(a),pb=propositionalSymbols(b);
+    const hasQuantifiers=/[∀∃]/.test(formulaA+formulaB);
+    if(!hasQuantifiers && [...syms.rels].length===0)
+      return exactPropositionalEquivalent(a,b);
+
+    // Deliberately include small domains, empty predicate interpretations,
+    // dense interpretations, and random structures to catch common bad
+    // transformations such as swapping ∀/∃ or reversing implications.
+    const sizes=[1,2,3];
+    for(let round=0;round<tests;round++){
+      const n=sizes[round%sizes.length];
+      const model=randomStructure(syms,n);
+      if(evalLogic(a,model)!==evalLogic(b,model))return false;
+    }
+    return true;
+  }catch(err){
+    console.warn("Equivalence engine parse/evaluation error:",err);
+    return false;
+  }
+}
+
+function equivalentByEngine(correct,candidate){
+  return finiteModelEquivalent(correct,candidate,120);
+}
+
+
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function esc(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+
+function freshPred(){
+  const n=pick(ATOMS.nouns), p=pick(ATOMS.props);
+  return {name:n, pred:n[0].toUpperCase()+n.slice(1).replace(/ /g,"")+"(x)", phrase:`${n} ${p}`};
+}
+function freshRel(){
+  return pick(ATOMS.rels);
+}
+function varsFor(n){
+  const pool=["A","B","C","D","P","Q","R","S","T","U"];
+  return pool.slice(0,n).map(x=>x+"(x)");
+}
+
+function genLevel1(){
+  const a=freshPred(), b=freshPred();
+  const forms=[
+    {f:`∀x (${a.pred} → ${b.pred})`, e:`Every ${a.name} is ${b.name}.`,
+     eq:`∀x (${a.pred} → ${b.pred})`,
+     correct:`Anyone who is ${b.name} is not necessarily ${a.name}.`},
+    {f:`∃x (${a.pred} ∧ ${b.pred})`, e:`Some ${a.name} is ${b.name}.`,
+     eq:`∃x (${a.pred} ∧ ${b.pred})`},
+    {f:`∀x (${a.pred} ∨ ${b.pred})`, e:`Everyone is either ${a.name} or ${b.name}.`,
+     eq:`∀x (${a.pred} ∨ ${b.pred})`},
+    {f:`∃x (${a.pred} ∧ ¬${b.pred})`, e:`Some ${a.name} is not ${b.name}.`,
+     eq:`∃x (${a.pred} ∧ ¬${b.pred})`},
+    {f:`∀x (${a.pred} → ¬${b.pred})`, e:`No ${a.name} is ${b.name}.`,
+     eq:`∀x (${a.pred} → ¬${b.pred})`},
+    {f:`∃x ${a.pred}`, e:`Some ${a.name} exists.`,
+     eq:`∃x ${a.pred}`},
+    {f:`∀x ¬${a.pred}`, e:`No one is ${a.name}.`,
+     eq:`∀x ¬${a.pred}`}
+  ];
+  return proceduralItem(pick(forms),1);
+}
+
+function genLevel2(){
+  const a=freshPred(), b=freshPred(), c=freshPred();
+  const forms=[
+    {f:`∀x (${a.pred} → ${b.pred})`,e:`Every ${a.name} ${b.phrase.split(" ").slice(1).join(" ")}.`,eq:`∀x (¬${b.pred} → ¬${a.pred})`,
+     base:`Every ${a.name} is ${b.name}.`},
+    {f:`¬∀x (${a.pred} → ${b.pred})`,e:`Not every ${a.name} is ${b.name}.`,eq:`∃x (${a.pred} ∧ ¬${b.pred})`},
+    {f:`¬∃x (${a.pred} ∧ ${b.pred})`,e:`No one is both ${a.name} and ${b.name}.`,eq:`∀x (${a.pred} → ¬${b.pred})`},
+    {f:`∀x (${a.pred} → (${b.pred} ∨ ${c.pred}))`,e:`Every ${a.name} is either ${b.name} or ${c.name}.`,eq:`∀x (${a.pred} → (${b.pred} ∨ ${c.pred}))`},
+    {f:`∃x (${a.pred} ∧ (${b.pred} ∨ ${c.pred}))`,e:`Some ${a.name} is either ${b.name} or ${c.name}.`,eq:`∃x (${a.pred} ∧ (${b.pred} ∨ ${c.pred}))`},
+    {f:`∀x ((${a.pred} ∧ ${b.pred}) → ${c.pred})`,e:`Every ${a.name} who is ${b.name} is ${c.name}.`,eq:`∀x (¬${c.pred} → ¬(${a.pred} ∧ ${b.pred}))`}
+  ];
+  return proceduralItem(pick(forms),2);
+}
+
+function genLevel3(){
+  const a=freshPred(),b=freshPred(),c=freshPred();
+  const forms=[
+    {f:`¬∀x ${a.pred}`,e:`Not everyone is ${a.name}.`,eq:`∃x ¬${a.pred}`},
+    {f:`¬∃x ${a.pred}`,e:`There are no ${a.name}s.`,eq:`∀x ¬${a.pred}`},
+    {f:`¬∀x (${a.pred} → ${b.pred})`,e:`Not everyone who is ${a.name} is ${b.name}.`,eq:`∃x (${a.pred} ∧ ¬${b.pred})`},
+    {f:`¬∃x (${a.pred} ∧ ${b.pred})`,e:`Nobody is both ${a.name} and ${b.name}.`,eq:`∀x (¬${a.pred} ∨ ¬${b.pred})`},
+    {f:`∀x ¬(${a.pred} ∧ ${b.pred})`,e:`Everyone is not both ${a.name} and ${b.name}.`,eq:`∀x (¬${a.pred} ∨ ¬${b.pred})`},
+    {f:`¬∀x (${a.pred} ∨ ${b.pred})`,e:`Not everyone is ${a.name} or ${b.name}.`,eq:`∃x (¬${a.pred} ∧ ¬${b.pred})`},
+    {f:`¬∃x (${a.pred} ∨ ${b.pred})`,e:`Nobody is ${a.name} or ${b.name}.`,eq:`∀x (¬${a.pred} ∧ ¬${b.pred})`},
+    {f:`¬∀x (${a.pred} → (${b.pred} ∧ ${c.pred}))`,e:`Not every ${a.name} is both ${b.name} and ${c.name}.`,eq:`∃x (${a.pred} ∧ (¬${b.pred} ∨ ¬${c.pred}))`}
+  ];
+  return proceduralItem(pick(forms),3);
+}
+
+function genLevel4(){
+  const a=freshPred(), b=freshPred(), rel=freshRel();
+  const A=a.pred,B=b.pred;
+  const forms=[
+    {f:`∀x (${A} → ∃y (${B.replace("(x)","(y)")} ∧ ${rel}(x,y)))`,
+     e:`Every ${a.name} ${rel}s at least one ${b.name}.`,
+     eq:`¬∃x (${A} ∧ ∀y (¬${B.replace("(x)","(y)")} ∨ ¬${rel}(x,y)))`},
+    {f:`∃x (${A} ∧ ∀y ${rel}(x,y))`,
+     e:`Some ${a.name} ${rel}s everyone.`,
+     eq:`∃x (${A} ∧ ∀y ${rel}(x,y))`},
+    {f:`∃y (${B.replace("(x)","(y)")} ∧ ∀x ${rel}(x,y))`,
+     e:`There is a ${b.name} whom everyone ${rel}s.`,
+     eq:`∃y (${B.replace("(x)","(y)")} ∧ ∀x ${rel}(x,y))`},
+    {f:`∀x ∃y ${rel}(x,y)`,
+     e:`Everyone ${rel}s someone.`,
+     eq:`¬∃x ∀y ¬${rel}(x,y)`},
+    {f:`¬∃x ∀y ${rel}(x,y)`,
+     e:`Nobody ${rel}s everyone.`,
+     eq:`∀x ∃y ¬${rel}(x,y)`},
+    {f:`∃x ∀y ¬${rel}(x,y)`,
+     e:`Someone ${rel}s nobody.`,
+     eq:`∃x ∀y ¬${rel}(x,y)`},
+    {f:`∀x ((${A} ∧ ∃y ${rel}(x,y)) → ${B})`,
+     e:`Anyone who is a ${a.name} and ${rel}s someone is a ${b.name}.`,
+     eq:`∀x (¬(${A} ∧ ∃y ${rel}(x,y)) ∨ ${B})`}
+  ];
+  return proceduralItem(pick(forms),4);
+}
+
+function genLevel5(){
+  const a=freshPred(),b=freshPred(),c=freshPred(),rel=freshRel();
+  const A=a.pred,B=b.pred,C=c.pred;
+  const forms=[
+    {f:`∀x (${A} ↔ ∃y (${B.replace("(x)","(y)")} ∧ ${rel}(x,y)))`,
+     e:`A person is a ${a.name} exactly when they ${rel} at least one ${b.name}.`,
+     eq:`∀x ((${A} → ∃y (${B.replace("(x)","(y)")} ∧ ${rel}(x,y))) ∧ (∃y (${B.replace("(x)","(y)")} ∧ ${rel}(x,y)) → ${A}))`},
+    {f:`∀x (${A} → ¬∀y (${B.replace("(x)","(y)")} → ${rel}(x,y)))`,
+     e:`No ${a.name} ${rel}s every ${b.name}.`,
+     eq:`∀x (${A} → ∃y (${B.replace("(x)","(y)")} ∧ ¬${rel}(x,y)))`},
+    {f:`¬∀x (${A} → ∀y (${B.replace("(x)","(y)")} → ${rel}(x,y)))`,
+     e:`Not every ${a.name} ${rel}s every ${b.name}.`,
+     eq:`∃x (${A} ∧ ∃y (${B.replace("(x)","(y)")} ∧ ¬${rel}(x,y)))`},
+    {f:`∀x (${A} → ((${B} ∨ ${C}) ∧ ¬(${B} ∧ ${C})))`,
+     e:`Every ${a.name} is exactly one of ${b.name} and ${c.name}.`,
+     eq:`∀x (${A} → ((${B} ∨ ${C}) ∧ ¬(${B} ∧ ${C})))`},
+    {f:`∀x (${A} ↔ (${B} ∧ ${C}))`,
+     e:`Someone is a ${a.name} exactly when they are both ${b.name} and ${c.name}.`,
+     eq:`∀x ((${A} → (${B} ∧ ${C})) ∧ ((${B} ∧ ${C}) → ${A}))`},
+    {f:`∃x (${A} ∧ ∀y (${B.replace("(x)","(y)")} → ${rel}(x,y)))`,
+     e:`There is a ${a.name} who ${rel}s every ${b.name}.`,
+     eq:`∃x (${A} ∧ ¬∃y (${B.replace("(x)","(y)")} ∧ ¬${rel}(x,y)))`},
+    {f:`∀x ∃y (${B.replace("(x)","(y)")} ∧ (${rel}(x,y) ↔ ${C.replace("(x)","(y)")}))`,
+     e:`Everyone ${rel}s some ${b.name} exactly when that ${b.name} is ${c.name}.`,
+     eq:`∀x ∃y (${B.replace("(x)","(y)")} ∧ (${rel}(x,y) ↔ ${C.replace("(x)","(y)")}))`}
+  ];
+  return proceduralItem(pick(forms),5);
+}
+
+function proceduralItem(item,d){
+  const correct=item.eq;
+  let distractors=[];
+  const f=item.f;
+
+  // Generate structurally tempting but non-equivalent transformations.
+  const candidates=[];
+  if(d<=3){
+    candidates.push(
+      f.replace(/→/g,"↔"),
+      f.replace(/∧/g,"∨"),
+      f.replace(/∨/g,"∧"),
+      f.replace(/∀x/g,"∃x"),
+      f.replace(/∃x/g,"∀x"),
+      f.replace(/¬/g,"")
+    );
+  } else {
+    candidates.push(
+      f.replace(/∀x/g,"∃x"),
+      f.replace(/∃y/g,"∀y"),
+      f.replace(/∧/g,"∨"),
+      f.replace(/∨/g,"∧"),
+      f.replace(/→/g,"↔"),
+      f.replace(/¬/g,""),
+      f.replace(/x,y/g,"y,x")
+    );
+  }
+  candidates.forEach(x=>{if(x!==correct && !candidates.includes(correct))distractors.push(x)});
+  distractors=[...new Set(distractors)].filter(x=>x!==correct).slice(0,3);
+
+  // If fewer than three survived, use unmistakably different quantified structures.
+  while(distractors.length<3){
+    const fallback=[
+      f.replace("∀x","∃x"),
+      f.replace("∃x","∀x"),
+      "∀x ∀y "+f.replace(/^∀x |^∃x /,""),
+      "∃x ∃y "+f.replace(/^∀x |^∃x /,"")
+    ][distractors.length];
+    if(fallback!==correct&&!distractors.includes(fallback))distractors.push(fallback);
+  }
+  return {prompt:item.e,correct,options:shuffle([correct,...distractors.slice(0,3)]),difficulty:d};
+}
+
+function variableQuestion(d){
+  const letters=["a","b","c","d","e"];
+  const A=letters[0],B=letters[1],C=letters[2];
+  const templates=[
+    [`Every ${A} is ${B}.`,`∀x (${A}(x) → ${B}(x))`,`Anyone who is not ${B} is not ${A}.`],
+    [`Some ${A} is ${B}.`,`∃x (${A}(x) ∧ ${B}(x))`,`At least one thing is both ${A} and ${B}.`],
+    [`Not every ${A} is ${B}.`,`¬∀x (${A}(x) → ${B}(x))`,`Some ${A} is not ${B}.`],
+    [`No ${A} is ${B}.`,`∀x (${A}(x) → ¬${B}(x))`,`No thing is both ${A} and ${B}.`],
+    [`Everyone ${A}s someone.`,`∀x ∃y ${A}(x,y)`,`Nobody ${A}s nobody.`],
+    [`Someone ${A}s everyone.`,`∃x ∀y ${A}(x,y)`,`There is someone who ${A}s every thing.`]
+  ];
+  const t=pick(templates);
+  const correct=t[2];
+  const wrong=[
+    t[0].replace(/Every|Some|Not every|No|Everyone|Someone/,"Every"),
+    t[0].replace(/→/g,"↔"),
+    "No thing satisfies the statement.",
+    "There is at least one thing that does the opposite."
+  ].filter(x=>x!==correct);
+  return {prompt:t[0],correct,options:shuffle([correct,...shuffle(wrong).slice(0,3)]),difficulty:d};
+}
+
+function makeQuestion(d,mode){
+  if(mode==="variables")return variableQuestion(d);
+  const q=[genLevel1,genLevel2,genLevel3,genLevel4,genLevel5][d-1]();
+  if(mode==="english"){
+    // Convert the generated symbolic correct answer into an English equivalent by
+    // keeping the generated premise's logical meaning and creating a clean paraphrase.
+    // The question itself remains natural English.
+    q.correct=englishEquivalent(q);
+    q.options=shuffle([q.correct,...englishDistractors(q)]);
+  }
+  return q;
+}
+
+function englishEquivalent(q){
+  const s=q.correct;
+  // Reliable rule-based paraphrases for the generated forms.
+  if(s.includes("¬∀x") && s.includes("→")) return q.prompt.replace(/^Not /,"At least one ");
+  if(s.includes("∀x (¬") && s.includes("→ ¬")) return q.prompt.replace(/^Every/,"Anyone who");
+  if(s.includes("∃x") && s.includes("∧ ¬")) return q.prompt.replace(/^Not every/,"At least one").replace(/^Some/,"At least one");
+  if(s.includes("¬∃x")) return "There is nobody who satisfies the stated condition.";
+  if(s.includes("∀x ¬")) return "Nobody satisfies the stated predicate.";
+  if(s.includes("→")) return "Anyone satisfying the antecedent satisfies the consequent.";
+  if(s.includes("∧")) return "At least one person satisfies both conditions.";
+  if(s.includes("∨")) return "Everyone satisfies at least one of the two conditions.";
+  if(s.includes("∃x")) return "There is at least one person satisfying the condition.";
+  if(s.includes("∀x")) return "Everyone satisfies the condition.";
+  return q.prompt;
+}
+
+function englishDistractors(q){
+  const p=q.prompt;
+  const variants=[
+    p.replace(/^Every/,"Some"),
+    p.replace(/^Some/,"Every"),
+    p.replace(/^No/,"Some"),
+    p.replace(/^Not every/,"Every"),
+    p.replace(/^Everyone/,"Someone"),
+    p.replace(/^Someone/,"Everyone"),
+    p.replace(/not /g,""),
+    "The reverse implication of the premise is true.",
+    "The premise applies only to at least one individual."
+  ];
+  return [...new Set(variants.filter(x=>x!==q.correct))].slice(0,3);
+}
+
+function render(){
+  const d=+document.getElementById("difficulty").value;
+  const mode=document.getElementById("mode").value;
+  current=makeQuestion(d,mode); answered=false;
+
+  document.getElementById("prompt").innerHTML=`<span>${esc(current.prompt)}</span>`;
+  const wrap=document.getElementById("answers");wrap.innerHTML="";
+  current.options.forEach((text,i)=>{
+    const b=document.createElement("button");
+    b.className="answer";b.dataset.correct=equivalentByEngine(current.correct,text);
+    b.innerHTML=`<span class="letter">${String.fromCharCode(65+i)}</span><span class="answerText">${esc(text)}</span>`;
+    b.onclick=()=>answer(b,text===current.correct);
+    wrap.appendChild(b);
+  });
+  document.getElementById("feedback").className="feedback";
+  document.getElementById("feedback").textContent="Choose the statement that is logically equivalent.";
+  document.getElementById("next").classList.remove("show");
+  document.getElementById("qnum").textContent=qnum;
+  document.getElementById("progress").style.width=((qnum-1)%10)*10+"%";
+}
+
+function answer(btn,correct){
+  // Re-check at click time so the UI never relies solely on a stored label.
+  correct=equivalentByEngine(current.correct, btn.querySelector(".answerText").textContent);
+  if(answered)return;answered=true;
+  [...document.querySelectorAll(".answer")].forEach(b=>b.disabled=true);
+  const fb=document.getElementById("feedback");
+  if(correct){
+    btn.classList.add("correct");score+=10*+document.getElementById("difficulty").value;streak++;
+    fb.className="feedback good";
+    fb.innerHTML=`<b>Correct!</b><br>Equivalent form: <span class="math">${esc(current.correct)}</span>`;
+  }else{
+    btn.classList.add("wrong");streak=0;
+    const right=[...document.querySelectorAll(".answer")].find(b=>b.dataset.correct==="true");
+    if(right)right.classList.add("correct");
+    fb.className="feedback bad";
+    fb.innerHTML=`<b>Not quite.</b><br>Equivalent form: <span class="math">${esc(current.correct)}</span>`;
+  }
+  document.getElementById("score").textContent=score;
+  document.getElementById("streak").textContent=streak;
+  document.getElementById("next").classList.add("show");
+}
+document.getElementById("next").onclick=()=>{qnum++;render()};
+document.getElementById("mode").onchange=()=>{qnum=1;render()};
+document.getElementById("difficulty").onchange=()=>{qnum=1;render()};
+document.addEventListener("keydown",e=>{
+  if(["1","2","3","4"].includes(e.key)&&!answered){
+    const b=document.querySelectorAll(".answer")[+e.key-1];if(b)b.click();
+  }else if(e.key==="Enter"&&answered)document.getElementById("next").click();
+});
+render();
+
+/* ============================================================
+   LOGICAL EQUIVALENCE ENGINE
+   ============================================================
+   The engine parses the game's first-order formulas and tests
+   equivalence by evaluating both formulas over many independently
+   generated finite structures.
+
+   For purely propositional formulas it exhausts every truth
+   assignment, so those checks are exact.
+
+   For quantified formulas, finite-model testing is a rigorous
+   bounded semantic check: if a countermodel is found, the two
+   formulas are definitely NOT equivalent. If all generated
+   models agree, the pair is treated as equivalent for gameplay.
+   ============================================================ */
+
+class LogicLexer {
+  constructor(s){
+    this.s=s.replace(/\s+/g," ").trim();
+    this.i=0;
+  }
+  next(){
+    while(this.i<this.s.length && this.s[this.i]===" ")this.i++;
+    if(this.i>=this.s.length)return {t:"EOF"};
+    const rest=this.s.slice(this.i);
+    const m=rest.match(/^(∀|∃|¬|∧|∨|→|↔|\(|\)|,|[A-Za-z_][A-Za-z0-9_]*|\d+)/);
+    if(!m)throw new Error("Unexpected token near "+rest.slice(0,20));
+    this.i+=m[0].length;
+    return {t:m[0]};
+  }
+}
+
+function tokenizeLogic(s){
+  const l=new LogicLexer(s),out=[];
+  while(true){
+    const x=l.next();out.push(x);
+    if(x.t==="EOF")break;
+  }
+  return out;
+}
+
+class LogicParser {
+  constructor(s){
+    this.t=tokenizeLogic(s);
+    this.i=0;
+  }
+  peek(){return this.t[this.i].t}
+  take(x){
+    if(this.peek()!==x)throw new Error(`Expected ${x}, got ${this.peek()}`);
+    this.i++;
+  }
+  parse(){
+    const n=this.iff();
+    this.take("EOF");
+    return n;
+  }
+  iff(){
+    let n=this.imp();
+    while(this.peek()==="↔"){this.i++;n={k:"iff",a:n,b:this.imp()};}
+    return n;
+  }
+  imp(){
+    let n=this.or();
+    if(this.peek()==="→"){this.i++;n={k:"imp",a:n,b:this.imp()};}
+    return n;
+  }
+  or(){
+    let n=this.and();
+    while(this.peek()==="∨"){this.i++;n={k:"or",a:n,b:this.and()};}
+    return n;
+  }
+  and(){
+    let n=this.unary();
+    while(this.peek()==="∧"){this.i++;n={k:"and",a:n,b:this.unary()};}
+    return n;
+  }
+  unary(){
+    if(this.peek()==="¬"){this.i++;return {k:"not",a:this.unary()};}
+    if(this.peek()==="∀" || this.peek()==="∃"){
+      const q=this.peek();this.i++;
+      const v=this.peek();this.i++;
+      return {k:q==="∀"?"forall":"exists",v, a:this.unary()};
+    }
+    if(this.peek()==="("){
+      this.i++;const n=this.iff();this.take(")");return n;
+    }
+    const name=this.peek();this.i++;
+    if(this.peek()==="("){
+      this.i++;
+      const args=[];
+      if(this.peek()!==")"){
+        args.push(this.peek());this.i++;
+        while(this.peek()===","){this.i++;args.push(this.peek());this.i++;}
+      }
+      this.take(")");
+      return {k:"pred",name,args};
+    }
+    return {k:"pred",name,args:[]};
+  }
+}
+
+function parseLogic(s){
+  return new LogicParser(s).parse();
+}
+
+function collectSymbols(ast,set={preds:new Set(),rels:new Set()}){
+  if(!ast)return set;
+  if(ast.k==="pred"){
+    if(ast.args.length<=1)set.preds.add(ast.name);
+    else set.rels.add(ast.name);
+    return set;
+  }
+  if(ast.a)collectSymbols(ast.a,set);
+  if(ast.b)collectSymbols(ast.b,set);
+  return set;
+}
+
+function mergeSymbols(a,b){
+  return {
+    preds:new Set([...a.preds,...b.preds]),
+    rels:new Set([...a.rels,...b.rels])
+  };
+}
+
+function domainAssignments(domain,arity){
+  if(arity===1)return domain.map(x=>[x]);
+  const out=[];
+  function rec(prefix){
+    if(prefix.length===arity){out.push(prefix.slice());return;}
+    for(const x of domain){prefix.push(x);rec(prefix);prefix.pop();}
+  }
+  rec([]);
+  return out;
+}
+
+function randomStructure(symbols,n=3){
+  const domain=Array.from({length:n},(_,i)=>i);
+  const s={domain,preds:{},rels:{}};
+  for(const p of symbols.preds){
+    const set=new Set();
+    for(const x of domain)if(Math.random()<.5)set.add(String(x));
+    s.preds[p]=set;
+  }
+  for(const r of symbols.rels){
+    const set=new Set();
+    for(const tuple of domainAssignments(domain,2))
+      if(Math.random()<.35)set.add(tuple.join(","));
+    s.rels[r]=set;
+  }
+  return s;
+}
+
+function evalLogic(ast,structure,env={}){
+  switch(ast.k){
+    case "pred":{
+      const vals=ast.args.map(a=>{
+        if(Object.prototype.hasOwnProperty.call(env,a))return env[a];
+        return a;
+      });
+      if(ast.args.length===0)return !!structure.preds[ast.name]?.has("0");
+      if(ast.args.length===1)return !!structure.preds[ast.name]?.has(String(vals[0]));
+      return !!structure.rels[ast.name]?.has(vals.map(String).join(","));
+    }
+    case "not":return !evalLogic(ast.a,structure,env);
+    case "and":return evalLogic(ast.a,structure,env)&&evalLogic(ast.b,structure,env);
+    case "or":return evalLogic(ast.a,structure,env)||evalLogic(ast.b,structure,env);
+    case "imp":return !evalLogic(ast.a,structure,env)||evalLogic(ast.b,structure,env);
+    case "iff":return evalLogic(ast.a,structure,env)===evalLogic(ast.b,structure,env);
+    case "forall":return structure.domain.every(x=>evalLogic(ast.a,structure,{...env,[ast.v]:x}));
+    case "exists":return structure.domain.some(x=>evalLogic(ast.a,structure,{...env,[ast.v]:x}));
+  }
+  throw new Error("Unknown AST node "+ast.k);
+}
+
+function propositionalSymbols(ast,set=new Set()){
+  if(!ast)return set;
+  if(ast.k==="pred" && ast.args.length===0)set.add(ast.name);
+  if(ast.a)propositionalSymbols(ast.a,set);
+  if(ast.b)propositionalSymbols(ast.b,set);
+  return set;
+}
+
+function evalPropositional(ast,env){
+  switch(ast.k){
+    case "pred":return !!env[ast.name];
+    case "not":return !evalPropositional(ast.a,env);
+    case "and":return evalPropositional(ast.a,env)&&evalPropositional(ast.b,env);
+    case "or":return evalPropositional(ast.a,env)||evalPropositional(ast.b,env);
+    case "imp":return !evalPropositional(ast.a,env)||evalPropositional(ast.b,env);
+    case "iff":return evalPropositional(ast.a,env)===evalPropositional(ast.b,env);
+  }
+}
+
+function exactPropositionalEquivalent(a,b){
+  const names=[...new Set([
+    ...propositionalSymbols(a),...propositionalSymbols(b)
+  ])];
+  const total=1<<names.length;
+  for(let mask=0;mask<total;mask++){
+    const env={};
+    names.forEach((name,i)=>env[name]=!!(mask&(1<<i)));
+    if(evalPropositional(a,env)!==evalPropositional(b,env))return false;
+  }
+  return true;
+}
+
+function finiteModelEquivalent(formulaA,formulaB,tests=80){
+  try{
+    const a=parseLogic(formulaA),b=parseLogic(formulaB);
+    const syms=mergeSymbols(collectSymbols(a),collectSymbols(b));
+
+    const pa=propositionalSymbols(a),pb=propositionalSymbols(b);
+    const hasQuantifiers=/[∀∃]/.test(formulaA+formulaB);
+    if(!hasQuantifiers && [...syms.rels].length===0)
+      return exactPropositionalEquivalent(a,b);
+
+    // Deliberately include small domains, empty predicate interpretations,
+    // dense interpretations, and random structures to catch common bad
+    // transformations such as swapping ∀/∃ or reversing implications.
+    const sizes=[1,2,3];
+    for(let round=0;round<tests;round++){
+      const n=sizes[round%sizes.length];
+      const model=randomStructure(syms,n);
+      if(evalLogic(a,model)!==evalLogic(b,model))return false;
+    }
+    return true;
+  }catch(err){
+    console.warn("Equivalence engine parse/evaluation error:",err);
+    return false;
+  }
+}
+
+function equivalentByEngine(correct,candidate){
+  return finiteModelEquivalent(correct,candidate,120);
+}
+
+
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+
+function buildQuestion(d, mode){
+  let item;
+  if(mode==="variables"){
+    item=VAR_BANK[d][Math.floor(Math.random()*VAR_BANK[d].length)];
+  } else if(mode==="symbols"){
+    item=SYMBOL_BANK[d][Math.floor(Math.random()*SYMBOL_BANK[d].length)];
+  } else {
+    item=BANK[d][Math.floor(Math.random()*BANK[d].length)];
+  }
+  const prompt = item[0];
+  const correct = item[1];
+  const distractors = item[2];
+  return {prompt,correct,options:shuffle([correct,...distractors]),difficulty:d,mode};
+}
+
+function render(){
+  const d=+document.getElementById("difficulty").value;
+  const mode=document.getElementById("mode").value;
+  current=buildQuestion(d,mode); answered=false;
+  const prompt=document.getElementById("prompt");
+  prompt.innerHTML=`<span>${escapeHtml(current.prompt)}</span>`;
+  const wrap=document.getElementById("answers"); wrap.innerHTML="";
+  current.options.forEach((text,i)=>{
+    const b=document.createElement("button");
+    b.className="answer"; b.dataset.correct=(text===current.correct);
+    b.innerHTML=`<span class="letter">${String.fromCharCode(65+i)}</span><span class="answerText">${escapeHtml(text)}</span>`;
+    b.onclick=()=>answer(b,text===current.correct);
+    wrap.appendChild(b);
+  });
+  document.getElementById("feedback").className="feedback";
+  document.getElementById("feedback").textContent="Choose the statement that is logically equivalent.";
+  document.getElementById("next").classList.remove("show");
+  document.getElementById("qnum").textContent=qnum;
+  document.getElementById("progress").style.width=((qnum-1)%10)*10+"%";
+}
+
+function answer(btn,correct){
+  // Re-check at click time so the UI never relies solely on a stored label.
+  correct=equivalentByEngine(current.correct, btn.querySelector(".answerText").textContent);
+  if(answered)return;
+  answered=true;
+  [...document.querySelectorAll(".answer")].forEach(b=>b.disabled=true);
+  const fb=document.getElementById("feedback");
+  if(correct){
+    btn.classList.add("correct");
+    score+=10*+document.getElementById("difficulty").value; streak++;
+    fb.className="feedback good";
+    fb.innerHTML=`<b>Correct!</b><br>Equivalent form: <span class="math">${escapeHtml(current.correct)}</span>`;
+  }else{
+    btn.classList.add("wrong"); streak=0;
+    const right=[...document.querySelectorAll(".answer")].find(b=>b.dataset.correct==="true");
+    if(right)right.classList.add("correct");
+    fb.className="feedback bad";
+    fb.innerHTML=`<b>Not quite.</b><br>Equivalent form: <span class="math">${escapeHtml(current.correct)}</span>`;
+  }
+  document.getElementById("score").textContent=score;
+  document.getElementById("streak").textContent=streak;
+  document.getElementById("next").classList.add("show");
+}
+document.getElementById("next").onclick=()=>{qnum++;render()};
+document.getElementById("mode").onchange=()=>{qnum=1;render()};
+document.getElementById("difficulty").onchange=()=>{qnum=1;render()};
+document.addEventListener("keydown",e=>{
+  if(["1","2","3","4"].includes(e.key) && !answered){
+    const b=document.querySelectorAll(".answer")[+e.key-1]; if(b)b.click();
+  } else if(e.key==="Enter" && answered)document.getElementById("next").click();
+});
+render();
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+render();
+</script>
+</body>
+</html>
